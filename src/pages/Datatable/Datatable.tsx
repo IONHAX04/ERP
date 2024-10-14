@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { FilterMatchMode, FilterOperator } from "primereact/api";
-import { DataTable, DataTableFilterMeta } from "primereact/datatable";
+import { useState, useEffect } from "react";
+import { DataTable } from "primereact/datatable";
 import { Column, ColumnFilterElementTemplateOptions } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { IconField } from "primereact/iconfield";
@@ -22,37 +21,6 @@ export default function Datatables() {
   const [customers, setCustomers] = useState<Customer[]>([]);
 
   const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
-  const [filters, setFilters] = useState<DataTableFilterMeta>({
-    userId: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    fname: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    lname: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    email: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    date: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
-    },
-    status1: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
-    },
-    status2: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
-    },
-  });
-  const [globalFilterValue, setGlobalFilterValue] = useState<string>("");
 
   const [statuses] = useState<string[]>([
     "unqualified",
@@ -161,18 +129,18 @@ export default function Datatables() {
     // CustomerService.getCustomersLarge().then((data) => setCustomers(getCustomers(data)));
   }, []);
 
-  const exportPdf = () => {
-    import("jspdf").then((jsPDF) => {
-      import("jspdf-autotable").then(() => {
-        const doc = new jsPDF.default(0, 0);
+  // const exportPdf = () => {
+  //   import("jspdf").then((jsPDF) => {
+  //     import("jspdf-autotable").then(() => {
+  //       const doc = new jsPDF.default(0, 0);
 
-        console.log("exportColumns", exportColumns);
-        console.log("customers", customers);
-        doc.autoTable(exportColumns, customers);
-        doc.save("customers.pdf");
-      });
-    });
-  };
+  //       console.log("exportColumns", exportColumns);
+  //       console.log("customers", customers);
+  //       doc.autoTable(exportColumns, customers);
+  //       doc.save("customers.pdf");
+  //     });
+  //   });
+  // };
 
   const exportColumns = [
     { title: "User ID", dataKey: "userId" },
@@ -220,7 +188,7 @@ export default function Datatables() {
       <div className="flex flex-wrap gap-2 justify-content-between align-items-center">
         <IconField iconPosition="left">
           <InputIcon className="pi pi-search" />
-          <InputText value={globalFilterValue} placeholder="Keyword Search" />
+          <InputText placeholder="Keyword Search" />
         </IconField>
         <div className="totalContents flex">
           <p>Total List: Count &nbsp;&nbsp; | &nbsp;&nbsp;</p>
@@ -235,18 +203,19 @@ export default function Datatables() {
             onClick={exportExcel}
             data-pr-tooltip="XLS"
           />
-          <Button
-            type="button"
-            icon="pi pi-file-pdf"
-            severity="danger"
-            rounded
-            onClick={exportPdf}
-            data-pr-tooltip="PDF"
-          />
         </div>
       </div>
     );
   };
+
+  // <Button
+  //   type="button"
+  //   icon="pi pi-file-pdf"
+  //   severity="danger"
+  //   rounded
+  //   onClick={exportPdf}
+  //   data-pr-tooltip="PDF"
+  // />;
 
   const statusBodyTemplate = (rowData: Customer) => {
     return (
@@ -298,7 +267,6 @@ export default function Datatables() {
           const customers = e.value as Customer[];
           setSelectedCustomers(customers);
         }}
-        filters={filters}
         filterDisplay="menu"
         scrollable
         scrollHeight="flex"
