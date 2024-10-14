@@ -7,7 +7,6 @@ import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { Button } from "primereact/button";
-import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { Tag } from "primereact/tag";
 
 interface Customer {
@@ -163,14 +162,6 @@ export default function Datatables() {
     // CustomerService.getCustomersLarge().then((data) => setCustomers(getCustomers(data)));
   }, []);
 
-  const formatDate = (value: string | Date) => {
-    return new Date(value).toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     let _filters = { ...filters };
@@ -269,24 +260,6 @@ export default function Datatables() {
           />
         </div>
       </div>
-    );
-  };
-
-  const dateBodyTemplate = (rowData: Customer) => {
-    return formatDate(rowData.date);
-  };
-
-  const dateFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-    return (
-      <Calendar
-        value={options.value}
-        onChange={(e: CalendarChangeEvent) =>
-          options.filterCallback(e.value, options.index)
-        }
-        dateFormat="mm/dd/yy"
-        placeholder="mm/dd/yyyy"
-        mask="99/99/9999"
-      />
     );
   };
 
@@ -395,9 +368,6 @@ export default function Datatables() {
           filterField="date"
           dataType="date"
           style={{ width: "12rem" }}
-          body={dateBodyTemplate}
-          filter
-          filterElement={dateFilterTemplate}
         />
 
         <Column
