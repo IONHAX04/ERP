@@ -23,7 +23,6 @@ export default function Datatables() {
 
   const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
   const [filters, setFilters] = useState<DataTableFilterMeta>({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     userId: {
       operator: FilterOperator.AND,
       constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
@@ -162,16 +161,6 @@ export default function Datatables() {
     // CustomerService.getCustomersLarge().then((data) => setCustomers(getCustomers(data)));
   }, []);
 
-  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    let _filters = { ...filters };
-
-    _filters["global"].value = value;
-
-    setFilters(_filters);
-    setGlobalFilterValue(value);
-  };
-
   const exportPdf = () => {
     import("jspdf").then((jsPDF) => {
       import("jspdf-autotable").then(() => {
@@ -231,11 +220,7 @@ export default function Datatables() {
       <div className="flex flex-wrap gap-2 justify-content-between align-items-center">
         <IconField iconPosition="left">
           <InputIcon className="pi pi-search" />
-          <InputText
-            value={globalFilterValue}
-            onChange={onGlobalFilterChange}
-            placeholder="Keyword Search"
-          />
+          <InputText value={globalFilterValue} placeholder="Keyword Search" />
         </IconField>
         <div className="totalContents flex">
           <p>Total List: Count &nbsp;&nbsp; | &nbsp;&nbsp;</p>
