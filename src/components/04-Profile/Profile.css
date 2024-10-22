@@ -1,0 +1,16 @@
+.userProfilePage .basicProfileCont .card {
+  display: flex;
+  justify-content: space-between;
+}
+
+.basicProfileCont {
+  background-color: rgba(128, 128, 128, 0.378);
+  margin: 30px;
+  padding: 40px;
+  border-radius: 10px;
+}
+
+
+.personalDet .userName{
+  display: flex;
+}

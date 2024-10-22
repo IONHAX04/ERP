@@ -1,158 +1,120 @@
 import { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
-import { Column, ColumnFilterElementTemplateOptions } from "primereact/column";
+import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
-import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { Button } from "primereact/button";
-import { Tag } from "primereact/tag";
+import { Dialog } from "primereact/dialog";
+import { Dropdown } from "primereact/dropdown";
+
+import Axios from "axios";
+import { FilterMatchMode } from "primereact/api";
 
 interface Customer {
+  id: string;
   userId: string;
   fname: string;
   lname: string;
   email: string;
   date: string;
-  status: string;
+  mobile: string;
+  status1: string;
+  status2: string;
+  comments: string;
+}
+
+interface Option {
+  label: string | unknown;
+  value: string | unknown;
 }
 
 export default function Datatables() {
   const [customers, setCustomers] = useState<Customer[]>([]);
-
   const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
+  const [displayStatusDialog, setDisplayStatusDialog] = useState(false);
+  const [displayFollowUpDialog, setDisplayFollowUpDialog] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [selectedFollowUp, setSelectedFollowUp] = useState<string>("");
 
-  const [statuses] = useState<string[]>([
-    "unqualified",
-    "qualified",
-    "new",
-    "negotiation",
-    "renewal",
-  ]);
+  const [followUpOptions, setFollowUpOptions] = useState<Option[]>([]);
+  const [statusOptions, setStatusOptions] = useState<Option[]>([]);
 
-  const getSeverity = (status: string) => {
-    switch (status) {
-      case "unqualified":
-        return "danger";
+  const [globalFilterValue, setGlobalFilterValue] = useState<string>("");
 
-      case "qualified":
-        return "success";
-
-      case "new":
-        return "info";
-
-      case "negotiation":
-        return "warning";
-
-      case "renewal":
-        return null;
-    }
-  };
-
-  const sampleCustomers = [
-    {
-      id: 1,
-      userId: "U001",
-      fname: "John",
-      lname: "Doe",
-      email: "john.doe@example.com",
-      date: "2023-01-15",
-      status: "Active",
-    },
-    {
-      id: 2,
-      userId: "U002",
-      fname: "Jane",
-      lname: "Smith",
-      email: "jane.smith@example.com",
-      date: "2022-11-30",
-      status: "Inactive",
-    },
-    {
-      id: 3,
-      userId: "U003",
-      fname: "Michael",
-      lname: "Johnson",
-      email: "michael.johnson@example.com",
-      date: "2023-07-20",
-      status: "Pending",
-    },
-    {
-      id: 4,
-      userId: "U004",
-      fname: "Emily",
-      lname: "Brown",
-      email: "emily.brown@example.com",
-      date: "2023-05-22",
-      status: "Active",
-    },
-    {
-      id: 5,
-      userId: "U005",
-      fname: "Chris",
-      lname: "Davis",
-      email: "chris.davis@example.com",
-      date: "2023-03-11",
-      status: "Suspended",
-    },
-    {
-      id: 6,
-      userId: "U006",
-      fname: "Sarah",
-      lname: "Wilson",
-      email: "sarah.wilson@example.com",
-      date: "2023-06-05",
-      status: "Active",
-    },
-    {
-      id: 7,
-      userId: "U007",
-      fname: "David",
-      lname: "Miller",
-      email: "david.miller@example.com",
-      date: "2022-10-12",
-      status: "Inactive",
-    },
-    {
-      id: 8,
-      userId: "U008",
-      fname: "Olivia",
-      lname: "Taylor",
-      email: "olivia.taylor@example.com",
-      date: "2023-08-17",
-      status: "Pending",
-    },
-  ];
+  // Filters state
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
 
   useEffect(() => {
-    setCustomers(sampleCustomers);
-    // CustomerService.getCustomersLarge().then((data) => setCustomers(getCustomers(data)));
+    const fetchCustomers = async () => {
+      try {
+        const response = await Axios.get(
+          import.meta.env.VITE_API_URL + `/staff/userSignedUp`
+        );
+        console.log("response", response);
+
+        const statusLabels = response.data.text.label.refStatusLabel;
+        const statusOptionsFormatted = Object.entries(statusLabels).map(
+          ([key, value]) => ({
+            label: value,
+            value: key,
+          })
+        );
+        console.log("statusOptionsFormatted", statusOptionsFormatted);
+
+        setStatusOptions(statusOptionsFormatted);
+        // Extract follow-up options
+        const followUpLabels = response.data.text.label.refFollowUpLabel;
+        const followUpOptionsFormatted = Object.entries(followUpLabels).map(
+          ([key, value]) => ({
+            label: value,
+            value: key,
+          })
+        );
+        console.log("followUpOptionsFormatted", followUpOptionsFormatted);
+        setFollowUpOptions(followUpOptionsFormatted);
+
+        console.log("response line 72", response);
+        const fetchedCustomers: Customer[] = response.data.text.data.map(
+          (customer: any) => ({
+            id: customer.refStId,
+            userId: customer.refSCustId,
+            fname: customer.refStFName + " " + customer.refStLName,
+            lname: customer.refStLName,
+            email: customer.refguardian || "",
+            date: customer.transTime || "",
+            mobile: customer.refCtMobile,
+            status1: customer.resStatusId || "Call not attended",
+            status2: customer.refFollowUpId || "Follow Up 1",
+            comments: customer.refSUpdatedBy || null,
+          })
+        );
+        setCustomers(fetchedCustomers);
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      }
+    };
+
+    fetchCustomers();
   }, []);
 
-  // const exportPdf = () => {
-  //   import("jspdf").then((jsPDF) => {
-  //     import("jspdf-autotable").then(() => {
-  //       const doc = new jsPDF.default(0, 0);
+  const handleStatusChange = (newStatus: string, customerId: string) => {
+    setCustomers((prevCustomers) =>
+      prevCustomers.map((cust) =>
+        cust.id === customerId ? { ...cust, status1: newStatus } : cust
+      )
+    );
+  };
 
-  //       console.log("exportColumns", exportColumns);
-  //       console.log("customers", customers);
-  //       doc.autoTable(exportColumns, customers);
-  //       doc.save("customers.pdf");
-  //     });
-  //   });
-  // };
-
-  const exportColumns = [
-    { title: "User ID", dataKey: "userId" },
-    { title: "First Name", dataKey: "fname" },
-    { title: "Last Name", dataKey: "lname" },
-    { title: "Email", dataKey: "email" },
-    { title: "DOJ", dataKey: "date" },
-    { title: "Status", dataKey: "status" },
-  ];
-
-  // Example of how to use exportColumns for exporting
-  console.log("Export Columns: ", exportColumns);
+  const handleFollowUpChange = (newFollowUp: string, customerId: string) => {
+    setCustomers((prevCustomers) =>
+      prevCustomers.map((cust) =>
+        cust.id === customerId ? { ...cust, status2: newFollowUp } : cust
+      )
+    );
+  };
 
   const exportExcel = () => {
     import("xlsx").then((xlsx) => {
@@ -183,76 +145,131 @@ export default function Datatables() {
     });
   };
 
+  const onGlobalFilterChange = (e: any) => {
+    const value = e.target.value;
+    const _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+
   const renderHeader = () => {
     return (
       <div className="flex flex-wrap gap-2 justify-content-between align-items-center">
         <IconField iconPosition="left">
           <InputIcon className="pi pi-search" />
-          <InputText placeholder="Keyword Search" />
+          <InputText
+            value={globalFilterValue}
+            onChange={onGlobalFilterChange}
+            placeholder="Keyword Search"
+          />
         </IconField>
-        <div className="totalContents flex">
-          <p>Total List: Count &nbsp;&nbsp; | &nbsp;&nbsp;</p>
-          <p>User Request: Count</p>
-        </div>
         <div className="flex align-items-center justify-content-end gap-2">
           <Button
             type="button"
-            icon="pi pi-file-excel"
             severity="success"
-            rounded
             onClick={exportExcel}
             data-pr-tooltip="XLS"
-          />
+          >
+            Export As Excel
+          </Button>
         </div>
       </div>
     );
   };
 
-  // <Button
-  //   type="button"
-  //   icon="pi pi-file-pdf"
-  //   severity="danger"
-  //   rounded
-  //   onClick={exportPdf}
-  //   data-pr-tooltip="PDF"
-  // />;
-
-  const statusBodyTemplate = (rowData: Customer) => {
-    return (
-      <Tag value={rowData.status} severity={getSeverity(rowData.status)} />
-    );
-  };
-
-  const statusFilterTemplate = (
-    options: ColumnFilterElementTemplateOptions
-  ) => {
+  const actionBodyTemplateStatus1 = (rowData: Customer) => {
     return (
       <Dropdown
-        value={options.value}
-        options={statuses}
-        onChange={(e: DropdownChangeEvent) =>
-          options.filterCallback(e.value, options.index)
-        }
-        itemTemplate={statusItemTemplate}
-        placeholder="Select One"
-        className="p-column-filter"
-        showClear
+        value={"" + rowData.status1 + ""}
+        options={statusOptions}
+        style={{ textTransform: "capitalize" }}
+        onChange={(e) => handleStatusChange(e.value, rowData.id)}
+        placeholder="Select Status"
       />
     );
   };
 
-  const statusItemTemplate = (option: string) => {
-    return <Tag value={option} severity={getSeverity(option)} />;
+  const actionBodyTemplateStatus2 = (rowData: Customer) => {
+    return (
+      <Dropdown
+        value={"" + rowData.status2 + ""}
+        options={followUpOptions}
+        onChange={(e) => handleFollowUpChange(e.value, rowData.id)}
+        placeholder="Select Follow Up"
+      />
+    );
   };
 
-  const actionBodyTemplate = () => {
-    return <i className="pi pi-cog" style={{ fontSize: "1.5rem" }}></i>;
+  const handleCommentChange = (customerId: string, value: string) => {
+    const updatedCustomers = customers.map((customer) =>
+      customer.id === customerId ? { ...customer, comments: value } : customer
+    );
+    setCustomers(updatedCustomers);
+  };
+
+  const handleSaveComment = async (customerId: string) => {
+    customers.forEach((customer) => {
+      console.log(
+        `Customer ID: ${customer.id}, Status1: ${customer.status1}, Status2: ${
+          customer.status2
+        }, Comments: ${customer.comments || "No comments"}`
+      );
+    });
+
+    const customer = customers.find((customer) => customer.id === customerId);
+
+    if (customer) {
+      if (customer.status1 && customer.status2 && customer.comments) {
+        try {
+          const payload = {
+            refStId: customer.id,
+            refStatusId: customer.status1,
+            refFollowUpId: customer.status2,
+            refComments: customer.comments,
+          };
+          console.log("Saving payload:", payload);
+
+          const response = await Axios.post(
+            import.meta.env.VITE_API_URL + `/staff/userFollowUp`,
+            payload
+          );
+
+          console.log("API response:", response);
+          if (response.status === 200) {
+            console.log(`Follow-up updated for Customer ID: ${customerId}`);
+          }
+        } catch (error) {
+          console.error("Error updating follow-up:", error);
+        }
+      } else {
+        console.warn("Please fill all fields before saving.");
+      }
+    }
+  };
+
+  const commentsBodyTemplate = (rowData: Customer) => {
+    return (
+      <div className="flex align-items-center gap-2">
+        <InputText
+          value={rowData.comments || ""}
+          onChange={(e) => handleCommentChange(rowData.id, e.target.value)}
+          className="p-inputtext-sm"
+          placeholder="Enter comments"
+        />
+        <Button
+          label="Save"
+          className="p-button-primary p-button-sm"
+          onClick={() => handleSaveComment(rowData.id)}
+        />
+      </div>
+    );
   };
 
   const header = renderHeader();
 
   return (
-    <div className="card">
+    <div className="card" style={{ overflow: "auto" }}>
       <DataTable
         value={customers}
         paginator
@@ -267,90 +284,91 @@ export default function Datatables() {
           const customers = e.value as Customer[];
           setSelectedCustomers(customers);
         }}
-        filterDisplay="menu"
-        scrollable
-        scrollHeight="flex"
-        globalFilterFields={[
-          "name",
-          "country.name",
-          "representative.name",
-          "balance",
-          "status",
-        ]}
         emptyMessage="No customers found."
+        filters={filters}
         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
       >
         <Column
-          selectionMode="multiple"
-          frozen
-          headerStyle={{ width: "3rem" }}
-        />
-        <Column
-          field="userId"
-          header="User ID"
-          sortable
-          frozen
-          filter
-          filterPlaceholder="Search by name"
-          style={{ width: "14rem" }}
-        />
-        <Column
           field="fname"
-          header="First Name"
-          sortable
+          header="Name"
           filter
-          style={{ width: "20rem" }}
-        />
-        <Column
-          field="lname"
-          header="Last Name"
           sortable
-          style={{ width: "20rem" }}
-        />
-        <Column
-          field="email"
-          header="Email"
-          sortable
-          style={{ width: "14rem" }}
-          filterPlaceholder="Search by Email"
+          style={{ inlineSize: "14rem" }}
         />
         <Column
           field="date"
-          header="DOJ"
-          sortable
+          header="Signed Up Date"
           filterField="date"
           dataType="date"
-          style={{ width: "12rem" }}
+          sortable
+          style={{ inlineSize: "20rem" }}
         />
-
+        <Column
+          field="mobile"
+          sortable
+          header="Mobile"
+          style={{ inlineSize: "14rem" }}
+          filterPlaceholder="Search by Mobile"
+        />
         <Column
           field="status1"
           header="Status 1"
-          sortable
-          filterMenuStyle={{ width: "14rem" }}
-          style={{ width: "12rem" }}
-          body={statusBodyTemplate}
-          filter
-          filterElement={statusFilterTemplate}
+          body={actionBodyTemplateStatus1}
+          filterMenuStyle={{ inlineSize: "14rem" }}
+          style={{ inlineSize: "14rem", textTransform: "capitalize" }}
         />
-
         <Column
           field="status2"
-          header="Status 2"
-          sortable
-          filterMenuStyle={{ width: "14rem" }}
-          style={{ width: "12rem" }}
-          body={statusBodyTemplate}
-          filter
-          filterElement={statusFilterTemplate}
+          header="Follow Up"
+          body={actionBodyTemplateStatus2}
+          filterMenuStyle={{ inlineSize: "14rem" }}
+          style={{ inlineSize: "14rem" }}
         />
-
         <Column
-          header="Action"
-          bodyStyle={{ textAlign: "center", overflow: "visible" }}
-          body={actionBodyTemplate}
+          header="Comments"
+          body={commentsBodyTemplate}
+          style={{ inlineSize: "18rem" }}
         />
       </DataTable>
+
+      <Dialog
+        header="Update Status"
+        visible={displayStatusDialog}
+        onHide={() => setDisplayStatusDialog(false)}
+      >
+        <div className="field">
+          <Dropdown
+            id="status"
+            value={selectedStatus}
+            options={statusOptions}
+            onChange={(e) => setSelectedStatus(e.value)}
+            placeholder="Select a status"
+          />
+        </div>
+        <Button label="Update" onClick={handleStatusChange} />
+      </Dialog>
+
+      <Dialog
+        header="Change Follow Up"
+        visible={displayFollowUpDialog}
+        modal
+        onHide={() => setDisplayFollowUpDialog(false)}
+      >
+        <div className="p-fluid">
+          <Dropdown
+            value={selectedFollowUp}
+            options={followUpOptions}
+            onChange={(e) => setSelectedFollowUp(e.value)}
+            placeholder="Select a Follow Up"
+            required
+          />
+        </div>
+        <Button
+          className="mt-5"
+          label="Update"
+          onClick={handleFollowUpChange}
+        />
+      </Dialog>
     </div>
   );
 }

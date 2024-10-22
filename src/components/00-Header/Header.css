@@ -1,5 +1,5 @@
 .sidebar {
-  background-color: #00052e;
+  background-color: #f95005;
   color: white;
   block-size: 100vh;
   inset-block-start: 0;
@@ -61,15 +61,17 @@
 }
 
 .link:hover {
-  border-inline-end: 4px solid white;
+  /* border-inline-end: 4px solid #f95005; */
   transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
-  background-color: #2d3359;
+  background-color: #ffffff;
+  color: black;
 }
 
 .active {
   border-inline-end: 4px solid white;
   transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
-  background-color: #2d3359;
+  background-color: #ffffff;
+  color: black;
 }
 
 .link_text {

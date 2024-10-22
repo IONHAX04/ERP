@@ -97,3 +97,72 @@ main {
 .p-datatable-header {
   padding: 7px 20px !important;
 }
+
+.p-fieldset-legend .p-fieldset-legend-text {
+  padding: 0px !important;
+}
+
+.headerPrimary {
+  margin: 0;
+  inset-block-start: 0;
+  position: sticky;
+  inset-inline-end: 0;
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  border-block-end: 1px solid rgba(0, 0, 0, 0.223);
+  justify-content: space-between;
+  z-index: 100;
+  padding: 10px 30px;
+}
+
+.headerPrimary .quickAcces {
+  display: flex;
+  align-items: center;
+}
+
+.headerPrimary .quickAcces .p-link i {
+  border-radius: 50%;
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.orgChart {
+  padding: 50px 10px;
+}
+
+.p-organizationchart .p-organizationchart-node-content {
+  border: 1px solid #dee2e6;
+  background: #ffffff;
+  color: #212529;
+  padding: 1.25rem;
+}
+
+.p-sortable-column .p-sortable-column-icon {
+  display: none;
+}
+
+/* Show the sortable icon on hover */
+.p-sortable-column:hover .p-sortable-column-icon {
+  display: inline-block;
+}
+
+.p-column-header-content,
+.p-icon.p-sortable-column-icon {
+  color: black;
+}
+
+.p-datatable .p-datatable-tbody > tr.p-highlight {
+  background: none;
+  color: black;
+}
+
+.p-dropdown-item {
+  text-transform: capitalize;
+}
+
+/* .p-dropdown.p-component.p-inputwrapper.p-inputwrapper-filled {
+  inline-size: 100%;
+} */
